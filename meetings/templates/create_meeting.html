@@ -1,0 +1,212 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="containier">
+    <h2 class="heading">Create Your Meeting</h2>
+
+    <!-- Meeting Creation Form -->
+    <form method="post" id="meetingForm" class="form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="title">Meeting Title</label>
+            <input type="text" name="title" id="title" required placeholder="Enter meeting title" class="input-field">
+        </div>
+
+        <div class="form-group">
+            <label for="scheduled_time">Meeting Time</label>
+            <input type="datetime-local" name="scheduled_time" id="scheduled_time" required class="input-field">
+        </div>
+
+        <button type="submit" class="btn-submit">Create Meeting</button>
+    </form>
+
+    <!-- Notification Display -->
+    <div id="notification" class="notification hidden">
+        <span>🎉 Meeting Created Successfully!</span>
+    </div>
+
+    <!-- Recent Meetings Section -->
+    <div class="recent-meetings">
+        <h3>Your Recent Meetings</h3>
+        {% if user_meetings %}
+            <div class="meeting-list">
+                {% for meeting in user_meetings %}
+                    <div class="meeting-card">
+                        <h4>{{ meeting.title }}</h4>
+                        <p>Scheduled for: {{ meeting.scheduled_time|date:"M d, Y h:i A" }}</p>
+                        <a href="{{ meeting.get_join_url }}" class="join-link">Join Meeting</a>
+                        <p class="share-url">Share: {{ request.scheme }}://{{ request.get_host }}{{ meeting.get_join_url }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>You haven't created any meetings yet. Start now!</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+/* Container Styling */
+.containier {
+    width: 80%; /* Adjust the width to 80% of the page */
+    max-width: 900px; /* Optional, to limit the max width */
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #d72727e6;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Heading Style */
+.heading {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+}
+
+/* Form Styling */
+.form {
+    background: #2972f0aa;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #fffefe;
+}
+
+.input-field {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-top: 6px;
+}
+
+.input-field:focus {
+    border-color: #4CAF50;
+    outline: none;
+}
+
+/* Submit Button Styling */
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: #021202;
+    color: #fff;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.3s;
+}
+
+.btn-submit:hover {
+    background-color: #015fd2;
+}
+
+/* Notification Styling */
+.notification {
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #e8f7e8;
+    color: #142715;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Recent Meetings Section */
+.recent-meetings {
+    margin-top: 50px;
+}
+
+.meeting-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+}
+
+.meeting-card {
+    background-color: #030121;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.meeting-card h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+}
+
+.meeting-card p {
+    color: #f1f6fa;
+    font-size: 0.95rem;
+}
+
+.join-link {
+    color: #007bff;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.share-url {
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* For smaller screens, make the container take up 90% width */
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+}
+</style>
+
+<!-- Custom JavaScript for Form Validation -->
+<script>
+document.getElementById('meetingForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    const title = document.getElementById('title').value;
+    const scheduledTime = document.getElementById('scheduled_time').value;
+    
+    // Simple validation
+    if (!title || !scheduledTime) {
+        alert("Please fill in all fields.");
+        return;
+    }
+
+    // Show success notification
+    document.getElementById('notification').classList.remove('hidden');
+    
+    setTimeout(() => {
+        document.getElementById('notification').classList.add('hidden');
+        event.target.submit(); // Submit the form after showing notification
+    }, 2000); // Hide after 2 seconds
+});
+</script>
+
+{% endblock %}

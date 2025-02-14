@@ -1,0 +1,180 @@
+<!-- file_converter/templates/converter/edit.html -->
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Document Preview Column -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Document Preview: {{ document.file.name }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="document-preview" style="min-height: 500px;">
+                        {% if document.file_type == 'pdf' %}
+                            <embed src="{{ document.file.url }}" type="application/pdf" width="100%" height="600px">
+                        {% else %}
+                            <div class="alert alert-info">
+                                Preview not available for {{ document.file_type }} files.
+                                <a href="{{ document.file.url }}" target="_blank">Open file</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editor Controls Column -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Options</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Remove Pages Section -->
+                    <div class="mb-4">
+                        <h5>Remove Pages</h5>
+                        <div class="input-group mb-2">
+                            <input type="number" id="pageToRemove" class="form-control" min="1" placeholder="Page number">
+                            <button class="btn btn-outline-secondary" onclick="addToRemoveList()">Add</button>
+                        </div>
+                        <ul id="pagesToRemove" class="list-group">
+                            <!-- Pages to remove will be listed here -->
+                        </ul>
+                    </div>
+
+                    <!-- Add Pages Section -->
+                    <div class="mb-4">
+                        <h5>Add New Page</h5>
+                        <div class="mb-2">
+                            <input type="number" id="insertPosition" class="form-control" min="1" placeholder="Insert position">
+                        </div>
+                        <div class="mb-2">
+                            <textarea id="pageContent" class="form-control" rows="3" placeholder="Page content"></textarea>
+                        </div>
+                        <button class="btn btn-outline-primary" onclick="addToInsertList()">Add to Insert List</button>
+                        <ul id="pagesToAdd" class="list-group mt-2">
+                            <!-- Pages to add will be listed here -->
+                        </ul>
+                    </div>
+
+                    <!-- Save Changes Button -->
+                    <div class="text-center">
+                        <button class="btn btn-success" onclick="saveChanges()">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let removePage = [];
+let addPages = [];
+let insertPositions = [];
+
+function addToRemoveList() {
+    const pageInput = document.getElementById('pageToRemove');
+    const page = parseInt(pageInput.value);
+    if (page > 0) {
+        removePage.push(page - 1);  // Convert to 0-based index
+        updateRemoveList();
+        pageInput.value = '';
+    }
+}
+
+function updateRemoveList() {
+    const list = document.getElementById('pagesToRemove');
+    list.innerHTML = '';
+    removePage.forEach((page, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+            Page ${page + 1}
+            <button class="btn btn-sm btn-danger" onclick="removeFromList(${index})">×</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function addToInsertList() {
+    const posInput = document.getElementById('insertPosition');
+    const contentInput = document.getElementById('pageContent');
+    const position = parseInt(posInput.value);
+    const content = contentInput.value.trim();
+    
+    if (position > 0 && content) {
+        insertPositions.push(position - 1);  // Convert to 0-based index
+        addPages.push(content);
+        updateAddList();
+        posInput.value = '';
+        contentInput.value = '';
+    }
+}
+
+function updateAddList() {
+    const list = document.getElementById('pagesToAdd');
+    list.innerHTML = '';
+    addPages.forEach((content, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+            Insert at position ${insertPositions[index] + 1}
+            <button class="btn btn-sm btn-danger" onclick="removeFromAddList(${index})">×</button>
+        `;
+        list.appendChild(li);
+    });
+}
+
+function removeFromList(index) {
+    removePage.splice(index, 1);
+    updateRemoveList();
+}
+
+function removeFromAddList(index) {
+    addPages.splice(index, 1);
+    insertPositions.splice(index, 1);
+    updateAddList();
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function saveChanges() {
+    const formData = new FormData();
+    removePage.forEach(page => formData.append('remove_pages[]', page));
+    addPages.forEach(page => formData.append('add_pages[]', page));
+    insertPositions.forEach(pos => formData.append('insert_positions[]', pos));
+    
+    fetch('', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = data.download_url;
+        }
+    })
+    .catch(error => {
+        alert('Error saving changes. Please try again.');
+    });
+}
+</script>
+{% endblock %}

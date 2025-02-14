@@ -1,0 +1,102 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'exam/styles.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+    padding: 2rem;
+    color: #333;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    color: #007bff;
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .exam-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .exam-list li {
+    background: #e9ecef;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .exam-list a {
+    color: #007bff;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  .exam-list a:hover {
+    text-decoration: underline;
+  }
+
+  .exam-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+  }
+
+  .btn-take-exam {
+    padding: 0.5rem 1rem;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .btn-take-exam:hover {
+    background-color: #218838;
+  }
+
+  .exam-icon {
+    margin-right: 1rem;
+    color: #17a2b8;
+    font-size: 1.5rem;
+  }
+</style>
+
+<div class="container">
+  <h1>Available Exams</h1>
+  <ul class="exam-list">
+    {% for exam in exams %}
+      <li>
+        <div>
+          <i class="fas fa-file-alt exam-icon"></i>
+          <span>
+            <a href="{% url 'exam:take_exam' exam.id %}">{{ exam.title }}</a>
+            <p class="exam-description">{{ exam.description }}</p>
+          </span>
+        </div>
+        <a href="{% url 'exam:take_exam' exam.id %}">{{ exam.title }}</a> - {{ exam.description }}
+      </li>
+    {% empty %}
+      <li class="text-center text-muted">
+        <p>No exams available at the moment.</p>
+      </li>
+    {% endfor %}
+  </ul>
+</div>

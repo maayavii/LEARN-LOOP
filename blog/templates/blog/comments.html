@@ -1,0 +1,780 @@
+{% load static %}
+{% load custom_filters %}
+
+<div id="tempocs">
+    <!-- Add Comment Form -->
+    {% if user.is_authenticated %}
+        <form class="comment-form" method="post" action="." enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend class="mb-4">Add Comment</legend>
+                <!-- Preview Container -->
+                <div id="media-preview" class="mb-3 d-none">
+                    <h6>Media Preview:</h6>
+                    <div class="preview-container">
+                        <img id="image-preview" class="img-fluid rounded mb-2 d-none" alt="Image preview">
+                        <video id="video-preview" class="w-100 rounded mb-2 d-none" controls></video>
+                        <audio id="voice-preview" class="w-100 mb-2 d-none" controls></audio>
+                    </div>
+                </div>
+                
+                <textarea required style="width: 100%;" name="body" id="cmtbody" cols="40" rows="5" 
+                    class="form-control" placeholder="Write your comment here..."></textarea>
+                
+                <!-- Media Upload Buttons -->
+                <div class="media-upload-buttons mt-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="media-upload-wrap">
+                                <label for="image-upload" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="fas fa-image"></i> Add Image
+                                </label>
+                                <input type="file" id="image-upload" name="image" accept="image/*" class="d-none">
+                                <small class="selected-file" id="image-selected"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="media-upload-wrap">
+                                <label for="video-upload" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="fas fa-video"></i> Add Video
+                                </label>
+                                <input type="file" id="video-upload" name="video" accept="video/*" class="d-none">
+                                <small class="selected-file" id="video-selected"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="media-upload-wrap">
+                                <label for="voice-upload" class="btn btn-outline-secondary btn-sm w-100">
+                                    <i class="fas fa-microphone"></i> Add Voice
+                                </label>
+                                <input type="file" id="voice-upload" name="voice" accept="audio/*" class="d-none">
+                                <small class="selected-file" id="voice-selected"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" id="acsubmit" type="submit">Add Comment</button>
+            </div>
+        </form>
+    {% endif %}
+
+    {% if comments.count > 0 or user.is_authenticated %}
+        <!-- Comments Header -->
+        <h3>Comments ({{ comments.count }}):</h3>
+        <hr>
+        <br>
+    {% endif %}
+
+    <!-- Comments List -->
+    {% if not comments %}
+        <div class="text-center">
+            <p class="text-muted">No Comments Yet...</p>
+        </div>
+    {% else %}
+        {% for comment in comments %}
+            <div class="content-section comment-container" id="comment-{{ comment.id }}">
+                <div class="media g-mb-30 media-comment">
+                    <!-- User Avatar -->
+                    <img class="d-flex g-width-50 g-height-50 rounded-circle g-mt-3 g-mr-15 article-img" 
+                        src="{{ comment.name.profile.image.url }}" 
+                        alt="{{ comment.name }}'s profile picture">
+                    
+                    <div class="media-body u-shadow-v18 g-bg-secondary g-pa-30">
+                        <!-- Comment Header -->
+                        <div class="g-mb-15">
+                            <h5 class="h5 g-color-gray-dark-v1 mb-0">
+                                <a class="mr-2" href="{% url 'profile-detail-view' comment.name.pk %}">
+                                    {{ comment.name }}
+                                </a>
+                            </h5>
+                            <small class="text-muted">{{ comment.date_added }}</small>
+                        </div>
+                        
+                        <!-- Comment Content -->
+                        <div class="comment-content">
+                            <p class="mt-3">{{ comment.body }}</p>
+
+                            <!-- Media Content -->
+                            {% if comment.image %}
+                                <div class="comment-media mb-3">
+                                    <img src="{{ comment.image.url }}" class="img-fluid rounded" alt="Comment image">
+                                </div>
+                            {% endif %}
+                            
+                            {% if comment.video %}
+                                <div class="comment-media mb-3">
+                                    <video controls class="w-100 rounded">
+                                        <source src="{{ comment.video.url }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            {% endif %}
+                            
+                            {% if comment.voice %}
+                                <div class="comment-media mb-3">
+                                    <audio controls class="w-100">
+                                        <source src="{{ comment.voice.url }}" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Comment Actions -->
+                        {% if user == comment.name or user.is_staff %}
+                        <div class="comment-actions mt-3">
+                            <a href="{% url 'edit-comment' comment.pk %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="#" 
+                               class="btn btn-sm btn-outline-danger ms-2 delete-comment-btn" 
+                               data-comment-id="{{ comment.pk }}">
+                                <i class="fas fa-trash"></i> Delete
+                            </a>
+                        </div>
+                        {% endif %}
+                    
+                        <!-- Like and Reply Actions -->
+                        <ul class="list-inline d-sm-flex my-0 mt-3">
+                            <!-- Like Button -->
+                            <li class="list-inline-item g-mr-20">
+                                <form action="{% url 'comment-like' %}" method="POST" class="like-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                                    
+                                    {% if user.is_authenticated %}
+                                        <button type="submit" class="btn btnhrt clike">
+                                            <i class="{% if clikes|get_item:comment.id %}fas{% else %}far{% endif %} fa-heart"></i>
+                                            <span class="likes-count">{{ comment.total_clikes }}</span>
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btnhrt" disabled>
+                                            <i class="far fa-heart"></i>
+                                            <span class="likes-count">{{ comment.total_clikes }}</span>
+                                        </button>
+                                    {% endif %}
+                                </form>
+                            </li>
+
+                            <!-- Reply Button -->
+                            <li class="list-inline-item">
+                                &nbsp;&nbsp;&nbsp;
+                                <a class="btn btncmt" data-toggle="collapse" 
+                                   href="#multiCollapse{{ comment.id }}" 
+                                   role="button" 
+                                   aria-expanded="false" 
+                                   aria-controls="multiCollapse{{ comment.id }}">
+                                    <i class="far fa-comment"></i>
+                                    <span class="replies-count">{{ comment.replies.count }}</span>
+                                </a>
+                            </li>
+                        </ul>
+
+                        <br>
+
+                        <!-- Reply Section -->
+                        <div class="collapse multi-collapse" id="multiCollapse{{ comment.id }}">
+                            <hr>
+                            <!-- Reply Form -->
+                            {% if user.is_authenticated %}
+                                <form class="reply-form" method="POST" action="." enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="comment_id" value="{{ comment.id }}">
+                                    <fieldset class="form-group">
+                                        <legend class="h5 mb-4">Replies:</legend>
+                                        <textarea required 
+                                            class="form-control"
+                                            style="width: 100%;" 
+                                            name="body" 
+                                            id="reply-body-{{ comment.id }}" 
+                                            cols="40" 
+                                            rows="2"
+                                            placeholder="Write your reply..."></textarea>
+
+                                        <!-- Media Preview for Reply -->
+                                        <div id="reply-media-preview-{{ comment.id }}" class="mb-3 d-none">
+                                            <h6>Media Preview:</h6>
+                                            <div class="preview-container">
+                                                <img id="reply-image-preview-{{ comment.id }}" class="img-fluid rounded mb-2 d-none" alt="Image preview">
+                                                <video id="reply-video-preview-{{ comment.id }}" class="w-100 rounded mb-2 d-none" controls></video>
+                                                <audio id="reply-voice-preview-{{ comment.id }}" class="w-100 mb-2 d-none" controls></audio>
+                                            </div>
+                                        </div>
+
+                                        <!-- Media Upload Buttons for Reply -->
+                                        <div class="media-upload-buttons mt-3">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="media-upload-wrap">
+                                                        <label for="reply-image-upload-{{ comment.id }}" class="btn btn-outline-secondary btn-sm w-100">
+                                                            <i class="fas fa-image"></i> Add Image
+                                                        </label>
+                                                        <input type="file" 
+                                                            id="reply-image-upload-{{ comment.id }}" 
+                                                            name="image" 
+                                                            accept="image/*" 
+                                                            class="d-none reply-media-input">
+                                                        <small class="selected-file" id="reply-image-selected-{{ comment.id }}"></small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="media-upload-wrap">
+                                                        <label for="reply-video-upload-{{ comment.id }}" class="btn btn-outline-secondary btn-sm w-100">
+                                                            <i class="fas fa-video"></i> Add Video
+                                                        </label>
+                                                        <input type="file" 
+                                                            id="reply-video-upload-{{ comment.id }}" 
+                                                            name="video" 
+                                                            accept="video/*" 
+                                                            class="d-none reply-media-input">
+                                                        <small class="selected-file" id="reply-video-selected-{{ comment.id }}"></small>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="media-upload-wrap">
+                                                        <label for="reply-voice-upload-{{ comment.id }}" class="btn btn-outline-secondary btn-sm w-100">
+                                                            <i class="fas fa-microphone"></i> Add Voice
+                                                        </label>
+                                                        <input type="file" 
+                                                            id="reply-voice-upload-{{ comment.id }}" 
+                                                            name="voice" 
+                                                            accept="audio/*" 
+                                                            class="d-none reply-media-input">
+                                                        <small class="selected-file" id="reply-voice-selected-{{ comment.id }}"></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </fieldset>
+                                    <div class="form-group">
+                                        <button class="btn btn-outline-info" type="submit">Reply</button>
+                                    </div>
+                                </form>
+                            {% endif %}
+
+                            <!-- Replies List -->
+                            {% for reply in comment.replies.all %}
+                                <div class="reply" id="reply-{{ reply.id }}">
+                                    <br>
+                                    <div class="g-mb-15">
+                                        <h5 class="h5 g-color-gray-dark-v1 mb-0">
+                                            <a class="mr-2" href="{% url 'profile-detail-view' reply.name.pk %}">
+                                                {{ reply.name }}
+                                            </a>
+                                        </h5>
+                                        <small class="text-muted">{{ reply.date_added }}</small>
+                                    </div>
+                                    
+                                    <p class="mt-3">{{ reply.body }}</p>
+
+                                    <!-- Reply Media Content -->
+                                    {% if reply.image %}
+                                        <div class="reply-media mb-3">
+                                            <img src="{{ reply.image.url }}" class="img-fluid rounded" alt="Reply image">
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if reply.video %}
+                                        <div class="reply-media mb-3">
+                                            <video controls class="w-100 rounded">
+                                                <source src="{{ reply.video.url }}" type="video/mp4">
+                                                Your browser does not support the video tag.
+                                            </video>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    {% if reply.voice %}
+                                        <div class="reply-media mb-3">
+                                            <audio controls class="w-100">
+                                                <source src="{{ reply.voice.url }}" type="audio/mpeg">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- Reply Like Button -->
+                                    <ul class="list-inline d-sm-flex my-0">
+                                        <li class="list-inline-item g-mr-20">
+                                            <form action="{% url 'comment-like' %}" method="POST" class="like-form">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="comment_id" value="{{ reply.id }}">
+                                                {% if user.is_authenticated %}
+                                                <button type="submit" class="btn btnhrt clike">
+                                                    <i class="{% if clikes|get_item:reply.id %}fas{% else %}far{% endif %} fa-heart"></i>
+                                                    <span class="likes-count">{{ reply.total_clikes }}</span>
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btnhrt" disabled>
+                                                    <i class="far fa-heart"></i>
+                                                    <span class="likes-count">{{ reply.total_clikes }}</span>
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                </ul>
+                                <hr>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+    {% endfor %}
+{% endif %}
+</div>
+
+<style>
+.btnhrt {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: transparent;
+}
+
+.btnhrt:hover {
+    color: #dc3545;
+}
+
+.btnhrt .fas.fa-heart {
+    color: #dc3545;
+}
+
+.btncmt {
+    padding: 0.25rem 0.5rem;
+    border: none;
+    background: transparent;
+}
+
+.btncmt:hover {
+    color: #007bff;
+}
+
+.media-comment {
+    margin-bottom: 2rem;
+}
+
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+}
+
+.comment-container {
+    background: #fff;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.reply {
+    margin-left: 2rem;
+    padding-left: 1rem;
+    border-left: 3px solid #dee2e6;
+}
+
+.media-upload-wrap {
+    margin-bottom: 10px;
+}
+
+.selected-file {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.8em;
+    color: #666;
+}
+
+.comment-media {
+    max-width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.comment-media img {
+    max-height: 400px;
+    object-fit: contain;
+    width: 100%;
+}
+
+.comment-media video {
+    max-height: 400px;
+    width: 100%;
+}
+
+#media-preview {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+#media-preview img,
+#media-preview video {
+    max-height: 200px;
+    width: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.preview-container {
+    text-align: center;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.comment-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.comment-actions .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+.comment-actions .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.comment-actions i {
+    font-size: 0.875rem;
+}
+</style>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Utility functions
+    function setupMediaHandlers(config) {
+        const { input, label, preview, previewContainer, type } = config;
+        
+        if (input && label) {
+            input.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    const file = this.files[0];
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+                    label.textContent = `Selected: ${file.name} (${fileSize}MB)`;
+                    
+                    // Show preview
+                    previewContainer.classList.remove('d-none');
+                    preview.classList.remove('d-none');
+                    
+                    // Create preview URL
+                    const url = URL.createObjectURL(file);
+                    preview.src = url;
+                    
+                    // Cleanup URL when preview is loaded
+                    preview.onload = () => URL.revokeObjectURL(url);
+                } else {
+                    label.textContent = '';
+                    preview.classList.add('d-none');
+                    if (document.querySelectorAll(`${previewContainer.id} > .preview-container > :not(.d-none)`).length === 0) {
+                        previewContainer.classList.add('d-none');
+                    }
+                }
+            });
+        }
+    }
+
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Handle form submission
+    function handleFormSubmission(form, options = {}) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch(window.location.pathname, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('tempocs').innerHTML = data.form;
+                
+                // Reset form and previews
+                form.reset();
+                
+                if (options.previewContainer) {
+                    options.previewContainer.classList.add('d-none');
+                }
+                
+                form.querySelectorAll('.selected-file').forEach(label => {
+                    label.textContent = '';
+                });
+                
+                // Re-initialize handlers after content update
+                initializeAllHandlers();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    // Setup handlers for main comment form
+    function setupCommentForm() {
+        const commentForm = document.querySelector('.comment-form');
+        if (commentForm) {
+            // Setup media handlers for main comment form
+            ['image', 'video', 'voice'].forEach(type => {
+                setupMediaHandlers({
+                    input: document.getElementById(`${type}-upload`),
+                    label: document.getElementById(`${type}-selected`),
+                    preview: document.getElementById(`${type}-preview`),
+                    previewContainer: document.getElementById('media-preview'),
+                    type: type
+                });
+            });
+
+            // Setup form submission
+            handleFormSubmission(commentForm, {
+                previewContainer: document.getElementById('media-preview')
+            });
+        }
+    }
+
+    // Setup handlers for reply forms and media previews
+    function setupReplyForms() {
+        document.querySelectorAll('.reply-form').forEach(form => {
+            const commentId = form.querySelector('input[name="comment_id"]').value;
+            
+            // Setup media handlers for each reply form
+            ['image', 'video', 'voice'].forEach(type => {
+                const input = document.getElementById(`reply-${type}-upload-${commentId}`);
+                const label = document.getElementById(`reply-${type}-selected-${commentId}`);
+                const previewContainer = document.getElementById(`reply-media-preview-${commentId}`);
+                const preview = document.getElementById(`reply-${type}-preview-${commentId}`);
+                
+                setupMediaHandlers({
+                    input: input,
+                    label: label,
+                    preview: preview,
+                    previewContainer: previewContainer,
+                    type: type
+                });
+            });
+
+            // Setup form submission
+            handleFormSubmission(form, {
+                previewContainer: document.getElementById(`reply-media-preview-${commentId}`)
+            });
+        });
+    }
+
+    // Like button functionality
+    function setupLikeButtons() {
+        document.querySelectorAll('.like-form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: new FormData(this),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const likeButton = this.querySelector('.btnhrt i');
+                    const likesCount = this.querySelector('.likes-count');
+                    
+                    if (data.liked) {
+                        likeButton.classList.replace('far', 'fas');
+                    } else {
+                        likeButton.classList.replace('fas', 'far');
+                    }
+                    
+                    likesCount.textContent = data.likes_count;
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        });
+    }
+
+    // Handle dynamic reply button clicks
+    function setupReplyButtons() {
+        document.querySelectorAll('.btncmt').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const commentId = this.getAttribute('href').replace('#multiCollapse', '');
+                const replyForm = document.querySelector(`#multiCollapse${commentId} .reply-form`);
+                
+                if (replyForm) {
+                    // Reset previews when showing reply form
+                    const previewContainer = document.getElementById(`reply-media-preview-${commentId}`);
+                    if (previewContainer) {
+                        previewContainer.classList.add('d-none');
+                    }
+                    replyForm.querySelectorAll('.selected-file').forEach(label => {
+                        label.textContent = '';
+                    });
+                }
+            });
+        });
+    }
+
+    // Setup delete functionality
+    function setupDeleteButtons() {
+    document.querySelectorAll('.delete-comment-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const commentId = this.dataset.commentId;
+            
+            // Create and show Bootstrap modal
+            const modalHtml = `
+                <div class="modal fade" id="deleteModal${commentId}" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel">Delete Comment</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete this comment?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger confirm-delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add modal to document if it doesn't exist
+            if (!document.getElementById(`deleteModal${commentId}`)) {
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+            }
+            
+            const modal = new bootstrap.Modal(document.getElementById(`deleteModal${commentId}`));
+            const modalElement = document.getElementById(`deleteModal${commentId}`);
+            
+            // Handle delete confirmation
+            modalElement.querySelector('.confirm-delete').onclick = async function() {
+                try {
+                    const response = await fetch(`/comment/${commentId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.status === 403) {
+                        showToast('Error', data.message, 'danger');
+                        modal.hide();
+                        return;
+                    }
+
+                    if (data.status === 'success') {
+                        // Remove the comment element from the page
+                        const commentElement = document.querySelector(`#comment-${commentId}`);
+                        if (commentElement) {
+                            // Add fade-out animation
+                            commentElement.style.transition = 'opacity 0.3s ease-out';
+                            commentElement.style.opacity = '0';
+                            
+                            // Remove element after animation
+                            setTimeout(() => {
+                                commentElement.remove();
+                            }, 300);
+                        }
+                        
+                        showToast('Success', 'Comment deleted successfully', 'success');
+                    } else {
+                        showToast('Error', data.message || 'Error deleting comment', 'danger');
+                    }
+                    
+                    modal.hide();
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('Error', 'Error deleting comment', 'danger');
+                    modal.hide();
+                }
+            };
+            
+            modal.show();
+        });
+    });
+}
+
+// Utility function to show Bootstrap toasts
+function showToast(title, message, type = 'success') {
+    const toastHtml = `
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header bg-${type} text-white">
+                    <strong class="me-auto">${title}</strong>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove any existing toast containers
+    document.querySelectorAll('.toast-container').forEach(container => {
+        container.remove();
+    });
+    
+    document.body.insertAdjacentHTML('beforeend', toastHtml);
+    const toastElement = document.querySelector('.toast');
+    const toast = new bootstrap.Toast(toastElement, {
+        delay: 3000
+    });
+    
+    toast.show();
+    
+    // Remove toast after it's hidden
+    toastElement.addEventListener('hidden.bs.toast', function() {
+        this.parentElement.remove();
+    });
+}
+    
+
+    // Initialize all handlers
+    function initializeAllHandlers() {
+        setupCommentForm();
+        setupReplyForms();
+        setupLikeButtons();
+        setupReplyButtons();
+        setupDeleteButtons();
+    }
+
+    // Initial setup
+    initializeAllHandlers();
+});
+</script>

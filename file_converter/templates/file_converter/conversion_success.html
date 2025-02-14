@@ -1,0 +1,20 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Conversion Successful</h2>
+    
+    {% if download_url %}
+    <div class="alert alert-success">
+        Your file has been converted successfully! <br>
+        <a href="{{ download_url }}" class="btn btn-success" download>Download Converted File</a>
+    </div>
+    {% else %}
+    <div class="alert alert-danger">
+        There was an issue with the conversion. Please try again.
+    </div>
+    {% endif %}
+    
+    <a href="{% url 'file_converter:convert_file' %}" class="btn btn-primary">Go back to File Converter</a>
+</div>
+{% endblock %}

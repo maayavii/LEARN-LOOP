@@ -1,0 +1,28 @@
+<!-- file_converter/templates/converter/edit_upload.html -->
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Upload Document for Editing</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            <label>Select Document (PDF, DOCX, or PPTX):</label>
+                            <input type="file" name="document" class="form-control" accept=".pdf,.docx,.pptx" required>
+                        </div>
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Upload & Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

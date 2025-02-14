@@ -1,0 +1,193 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Create New Exam</h2>
+    <form method="post" id="examForm">
+        {% csrf_token %}
+        
+        <!-- Exam Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4>Exam Information</h4>
+            </div>
+            <div class="card-body">
+                <!-- Basic Exam Info -->
+                <div class="form-group">
+                    <label for="{{ form.title.id_for_label }}">Title:</label>
+                    {{ form.title }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}">Description:</label>
+                    {{ form.description }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.date.id_for_label }}">Date:</label>
+                    {{ form.date }}
+                </div>
+                
+                <!-- Visibility Control -->
+                <div class="form-group mt-4">
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="is_published" name="is_published">
+                        <label class="custom-control-label" for="is_published">Make Exam Public</label>
+                        <small class="form-text text-muted">When enabled, other users can see and take this exam from your profile</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Section -->
+        <div id="questionsContainer">
+            <!-- Questions will be added here dynamically -->
+        </div>
+
+        <div class="mb-4">
+            <button type="button" class="btn btn-secondary" onclick="addQuestion()">
+                <i class="fas fa-plus"></i> Add Question
+            </button>
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Create Exam
+            </button>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Question Template -->
+<template id="questionTemplate">
+    <div class="card mb-4 question-card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">Question <span class="question-number"></span></h4>
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeQuestion(this)">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Question Text:</label>
+                <textarea class="form-control" name="question_[X]" rows="3" required></textarea>
+            </div>
+            <div class="answers-container mt-3">
+                <!-- Answers will be added here -->
+            </div>
+            <button type="button" class="btn btn-info btn-sm mt-3" onclick="addAnswer(this)">
+                <i class="fas fa-plus"></i> Add Answer Option
+            </button>
+        </div>
+    </div>
+</template>
+
+<!-- Answer Template -->
+<template id="answerTemplate">
+    <div class="answer-row mb-2">
+        <div class="input-group">
+            <input type="text" class="form-control" name="answer_[Q]_[A]" placeholder="Enter answer option" required>
+            <div class="input-group-append">
+                <div class="input-group-text bg-light">
+                    <input type="checkbox" name="correct_[Q]_[A]" class="mr-2">
+                    <small>Correct Answer</small>
+                </div>
+                <button type="button" class="btn btn-outline-danger" onclick="removeAnswer(this)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+let questionCount = 0;
+
+function addQuestion() {
+    questionCount++;
+    const container = document.getElementById('questionsContainer');
+    const template = document.getElementById('questionTemplate');
+    const questionCard = template.content.cloneNode(true);
+    
+    // Update question number and names
+    questionCard.querySelector('.question-number').textContent = questionCount;
+    questionCard.querySelector('textarea').name = `question_${questionCount}`;
+    
+    // Add initial answers
+    const questionDiv = questionCard.querySelector('.card');
+    container.appendChild(questionDiv);
+    addAnswer(questionDiv.querySelector('button')); // Add first answer
+    addAnswer(questionDiv.querySelector('button')); // Add second answer
+}
+
+function removeQuestion(button) {
+    if (document.querySelectorAll('.question-card').length > 1) {
+        if (confirm('Are you sure you want to remove this question?')) {
+            button.closest('.question-card').remove();
+        }
+    } else {
+        alert('You must have at least one question in the exam.');
+    }
+}
+
+function addAnswer(button) {
+    const questionCard = button.closest('.card');
+    const questionNum = questionCard.querySelector('.question-number').textContent;
+    const answersContainer = questionCard.querySelector('.answers-container');
+    const template = document.getElementById('answerTemplate');
+    const answerRow = template.content.cloneNode(true);
+    
+    const answerCount = answersContainer.children.length + 1;
+    const inputs = answerRow.querySelectorAll('input');
+    inputs[0].name = `answer_${questionNum}_${answerCount}`;
+    inputs[1].name = `correct_${questionNum}_${answerCount}`;
+    
+    answersContainer.appendChild(answerRow);
+}
+
+function removeAnswer(button) {
+    const answerRow = button.closest('.answer-row');
+    const answersContainer = answerRow.closest('.answers-container');
+    if (answersContainer.children.length > 2) {
+        if (confirm('Are you sure you want to remove this answer?')) {
+            answerRow.remove();
+        }
+    } else {
+        alert('Each question must have at least 2 answers.');
+    }
+}
+
+// Form validation before submit
+document.getElementById('examForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    
+    // Check if there are questions
+    if (document.querySelectorAll('.question-card').length === 0) {
+        alert('Please add at least one question to the exam.');
+        return;
+    }
+    
+    // Check if each question has at least one correct answer
+    let valid = true;
+    document.querySelectorAll('.question-card').forEach(question => {
+        const hasCorrectAnswer = Array.from(question.querySelectorAll('input[type="checkbox"]'))
+            .some(checkbox => checkbox.checked);
+        if (!hasCorrectAnswer) {
+            alert('Each question must have at least one correct answer marked.');
+            valid = false;
+            return;
+        }
+    });
+    
+    if (valid) {
+        this.submit();
+    }
+});
+
+// Add initial question when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    addQuestion();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<div class="container">
+    <div class="section">
+        <h2>Your Created Exams</h2>
+        {% if exams %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total Questions</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for exam in exams %}
+                <tr>
+                    <td>{{ exam.title }}</td>
+                    <td>{{ exam.date }}</td>
+                    <td>
+                        {% if exam.is_published %}
+                            Public
+                        {% else %}
+                            Private
+                        {% endif %}
+                    </td>
+                    <td>{{ exam.questions.count }}</td>
+                    <td>
+                        <a href="{% url 'exam:view_result' exam.id %}" class="btn btn-primary">View Results</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="alert alert-info">
+            <p>No Exams Created Yet</p>
+            <p>Start by creating your first exam!</p>
+            <a href="{% url 'exam:create_exam' %}" class="btn btn-primary">Create Your First Exam</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Available Exams</h2>
+            {% if user == object.user %}
+                <a href="{% url 'exam:create_exam' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create New Exam
+                </a>
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {% if exams %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total Questions</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exam in exams %}
+                                <tr>
+                                    <td>{{ exam.title }}</td>
+                                    <td>{{ exam.date }}</td>
+                                    <td>
+                                        {% if exam.is_published %}
+                                            <span class="badge badge-success">Public</span>
+                                        {% else %}
+                                            <span class="badge badge-secondary">Private</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ exam.questions.count }}</td>
+                                    <td>
+                                        {% if exam.created_by == user %}
+                                            <a href="{% url 'exam:view_result' exam.id %}" class="btn btn-info">View Results</a>
+                                        {% else %}
+                                            <a href="{% url 'exam:take_exam' exam.id %}" class="btn btn-primary">Take Exam</a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <h4 class="text-muted">No Exams Available</h4>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

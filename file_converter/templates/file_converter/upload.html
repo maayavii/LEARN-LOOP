@@ -1,0 +1,33 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>File Converter</h2>
+    
+    {% if error %}
+    <div class="alert alert-danger">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Select File:</label>
+            <input type="file" name="file" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Convert To:</label>
+            <select name="output_format" class="form-control" required>
+                <option value="pdf">PDF</option>
+                <option value="docx">DOCX</option>
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Convert</button>
+    </form>
+</div>
+{% endblock %}

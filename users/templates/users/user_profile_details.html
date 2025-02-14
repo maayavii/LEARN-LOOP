@@ -1,0 +1,257 @@
+{% extends "blog/base.html" %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block content %}
+<div class="row mt-4">
+  <!-- Left Column with Profile Info -->
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-body text-center">
+        <!-- Profile Image -->
+        <div class="position-relative">
+          <img class="rounded-circle img-fluid profile-image mb-3" src="{{ object.user.profile.image.url }}" alt="Profile Image">
+          {% if object.user.profile.is_online %}
+            <span class="online-circle"></span>
+          {% else %}
+            <span class="offline-circle"></span>
+          {% endif %}
+        </div>
+
+        <h4 class="card-title">{{ object.user.first_name }} {{ object.user.last_name }} [{{ object.user.username }}]</h4>
+        
+        <p>{{ object.user.profile.bio }}</p>
+
+        <!-- Social Links -->
+        <ul class="list-inline my-3">
+          {% if object.user.profile.github %}
+              <li class="list-inline-item">
+                  <a class="btn btn-danger" href="{{ object.user.profile.github }}">
+                      <i class="fab fa-github"></i>
+                  </a>
+              </li>
+          {% endif %}
+          {% if object.user.profile.linkedin %}
+              <li class="list-inline-item">
+                  <a class="btn btn-primary" href="{{ object.user.profile.linkedin }}">
+                      <i class="fab fa-linkedin"></i>
+                  </a>
+              </li>
+          {% endif %}
+      </ul>
+
+        <!-- Follow / Unfollow Logic -->
+        {% if object.user != user %}
+          <form action="{% url 'follow-unfollow-view' %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="profile_pk" value="{{ object.pk }}">
+            <button type="submit" class="btn {% if follow %}btn-danger{% else %}btn-primary{% endif %}">
+              {% if follow %}Unfollow{% else %}Follow{% endif %}
+            </button>
+          </form>
+        {% endif %}
+
+        
+      </div>
+    </div>
+
+    <!-- Profile Statistics -->
+    <div class="card mt-4">
+      <div class="card-body text-center">
+        <h5>Profile Statistics</h5>
+        <div class="row">
+          <div class="col"><strong>Posts:</strong> {{ object.profile_posts.count }}</div>
+          <div class="col"><strong>Friends:</strong> {{ friends|length }}</div>
+          <div class="col"><strong>Followers:</strong> {{ object.user.following.count }}</div>
+          <div class="col"><strong>Following:</strong> {{ object.user.profile.following.count }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exams Section -->
+    <div class="card mt-4">
+      <div class="card-body text-center">
+        <h5>Your Exams</h5>
+        <a href="{% url 'exam:user-exams' object.user.id %}" class="btn btn-primary">View-Exams</a>
+        {% if object.user == user %}
+          <a href="{% url 'exam:create_exam' %}" class="btn btn-success mt-2">Create New Exam</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column with Posts -->
+  <div class="col-md-4">
+    
+<!-- Posts Grid Section -->
+<div class="content-section">
+  <h4 class="text-center mb-4">{{ object.user.first_name }}'s Posts</h4>
+  <div class="row">
+      {% for post in posts %}
+          <div class="col-md-6 col-lg-4 mb-4">
+              <div class="card h-100 post-card">
+                  <div class="post-media">
+                      {% if post.images.all %}
+                          <img src="{{ post.images.first.image.url }}" 
+                               class="card-img-top" 
+                               alt="{{ post.title }}">
+                      {% elif post.videos.all %}
+                          <div class="video-thumbnail">
+                              <video class="card-img-top" controls>
+                                  <source src="{{ post.videos.first.video.url }}" type="video/mp4">
+                                  Your browser does not support the video tag.
+                              </video>
+                              <div class="video-play-icon">
+                                  <i class="fas fa-play"></i>
+                              </div>
+                          </div>
+                      {% else %}
+                          <div class="card-img-top d-flex align-items-center justify-content-center bg-light">
+                              <i class="fas fa-file-alt fa-3x text-muted"></i>
+                          </div>
+                      {% endif %}
+                      <div class="post-overlay">
+                          <div class="overlay-content">
+                              <div class="d-flex justify-content-around">
+                                  <span><i class="fas fa-heart"></i> {{ post.total_likes }}</span>
+                                  <span><i class="fas fa-comment"></i> {{ post.comments.count }}</span>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <a href="{% url 'post-detail' post.pk %}" class="stretched-link"></a>
+              </div>
+          </div>
+      {% empty %}
+          <div class="col-12 text-center py-3">
+              <p class="text-muted">No posts yet.</p>
+          </div>
+      {% endfor %}
+  </div>
+</div>
+
+
+</div>
+
+<!-- Modal for Followers / Following -->
+<div class="modal fade" id="followersFollowingModal" tabindex="-1" aria-labelledby="followersFollowingLabel" aria-hidden="true">
+  <!-- Modal content remains the same -->
+</div>
+
+
+
+
+<style>
+
+  .card{
+    background:linear-gradient(135deg, #b1bdb6 0%, #9ea6c1 100%);
+  }
+  .profile-image {
+    max-height: 100px;
+    max-width: 100px;
+    border-radius: 50%;
+  }
+  
+  .online-circle, .offline-circle {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+  }
+  
+  .online-circle {
+    background-color: green;
+  }
+  
+  .offline-circle {
+    background-color: gray;
+  }
+
+  /* New styles for posts grid */
+  .post-card {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+  }
+
+  .post-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .text-thumbnail {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    background-color: #e9ecef;
+    text-align: center;
+  }
+
+  .post-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .post-card:hover .post-overlay {
+    opacity: 1;
+  }
+
+  .overlay-content {
+    color: white;
+    font-size: 0.9rem;
+  }
+
+  .play-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    background: rgba(0, 0, 0, 0.5);
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-thumbnail {
+    height: 100%;
+    width: 100%;
+  }
+
+  .video-thumbnail video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+</style>
+
+<script>
+  function triggerAcceptFriendRequest(requestId) {
+    // Add your accept friend request logic here
+    console.log('Accepted Friend Request: ', requestId);
+  }
+
+  function triggerDeclineFriendRequest(requestId) {
+    // Add your decline friend request logic here
+    console.log('Declined Friend Request: ', requestId);
+  }
+</script>
+{% endblock %}

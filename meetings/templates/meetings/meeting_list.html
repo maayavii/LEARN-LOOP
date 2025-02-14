@@ -1,0 +1,151 @@
+{% extends 'blog/base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+<style>
+
+
+/* Header Section */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.header h2 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Buttons */
+.create-button {
+    background: linear-gradient(135deg, #4caf50, #2196f3);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.3s ease-in-out;
+}
+
+.create-button:hover {
+    background: linear-gradient(135deg, #3e8e41, #1a73e8);
+}
+
+/* Meeting Grid */
+.meeting-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.meeting-card {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.meeting-card:hover {
+    transform: translateY(-4px);
+}
+
+.meeting-card h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #444;
+}
+
+.meeting-card p {
+    color: #777;
+    margin: 8px 0;
+}
+
+.join-section {
+    margin-top: 16px;
+}
+
+.join-button {
+    color: white;
+    background-color: #007bff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.join-button:hover {
+    background-color: #0056b3;
+}
+
+/* Share Section */
+.share-section {
+    margin-top: 12px;
+}
+
+.share-section input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* No Meetings Section */
+.no-meeting {
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.no-meeting p {
+    color: #555;
+    font-size: 18px;
+    margin-bottom: 16px;
+}
+
+</style>
+
+<div class="container">
+    <div class="header">
+        <h2>Your Meetings</h2>
+
+    {% if meetings %}
+        <div class="meeting-grid">
+            {% for meeting in meetings %}
+                <div class="meeting-card">
+                    <h3>{{ meeting.title }}</h3>
+                    <p>Scheduled: {{ meeting.scheduled_time|date:"M d, Y h:i A" }}</p>
+                    <div class="join-section">
+                        <a href="{{ meeting.get_join_url }}" class="join-button">
+                            ➤ Join Meeting
+                        </a>
+                    </div>
+                    <div class="share-section">
+                        <p>Share URL:</p>
+                        <input type="text" 
+                               value="{{ request.scheme }}://{{ request.get_host }}{{ meeting.get_join_url }}"
+                               readonly
+                               onclick="this.select();">
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-meeting">
+            <p>No meetings found. Create your first meeting!</p>
+            <a href="{% url 'create_meeting' %}" class="create-button">
+                + Create New Meeting
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

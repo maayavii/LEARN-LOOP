@@ -1,0 +1,133 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="col-md-10 mx-auto">
+        <article class="content-section p-4 shadow rounded bg-light">
+            
+            <!-- Author and Post Metadata -->
+            <div class="d-flex align-items-center mb-3">
+                <img class="rounded-circle me-3" src="{{ post.author.profile.image.url }}" alt="Author Image" width="50" height="50">
+                <div>
+                    <h4 class="mb-0">
+                        <a class="text-dark" href="{% url 'profile-detail-view' post.author.pk %}">
+                            {{ post.author }}
+                        </a>
+                    </h4>
+                    <small class="text-muted">Posted on {{ post.date_posted|date:"F d, Y" }}</small>
+                </div>
+            </div>
+            <hr>
+            
+            <!-- Post Title -->
+            <h2 class="article-title">{{ post.title }}</h2>
+            <hr>
+            
+            <!-- Post Content -->
+            <p class="article-content">{{ post.content|safe }}</p>
+            
+            <!-- Image Section -->
+            {% if post.images.all %}
+                <div class="image-gallery mt-3">
+                    {% for image in post.images.all %}
+                        <img src="{{ image.image.url }}" class="img-fluid rounded mb-3" alt="Post Image">
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Video Section -->
+            {% if post.videos.all %}
+                <h4 class="mt-4">Videos</h4>
+                <div class="video-container mt-2">
+                    {% for video in post.videos.all %}
+                        <video class="w-100 mb-3" controls>
+                            <source src="{{ video.video.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Document Section -->
+            {% if post.documents.all %}
+                <h4 class="mt-4">Documents</h4>
+                <div class="document-list mt-2">
+                    {% for document in post.documents.all %}
+                        {% if document.document.url|lower|slice:"-4:" == ".pdf" %}
+                            <iframe src="{{ document.document.url }}" width="100%" height="600px" class="rounded border"></iframe>
+                        {% else %}
+                            <a href="{{ document.document.url }}" class="btn btn-primary mb-2" download>
+                                <i class="fas fa-download"></i> Download {{ document.document.name }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <!-- Like Section -->
+            <div class="post-like-section mt-3">
+                {% include 'blog/like_section.html' with post=post total_likes=post.total_likes liked=liked %}
+            </div>
+            
+            <!-- Edit and Delete buttons -->
+            {% if request.user == post.author %}
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'post-update' post.pk %}" class="btn btn-warning">Edit</a>
+                    <a href="{% url 'post-delete' post.pk %}" class="btn btn-danger">Delete</a>
+                </div>
+            {% endif %}
+        </article>
+        
+        <!-- Support Author Section -->
+        {% if request.user != post.author and post.author.profile.buy_me_coffee %}
+            <div class="support-author-card mt-4 p-4 text-center shadow rounded bg-warning text-dark">
+                <img src="{{ post.author.profile.image.url }}" class="rounded-circle mb-3" width="80" height="80" alt="{{ post.author.username }}">
+                <h4>Enjoyed this post?</h4>
+                <p>Support {{ post.author.username }} by buying a coffee!</p>
+                <a href="{{ post.author.profile.buy_me_coffee }}" target="_blank" class="btn btn-dark">
+                    <i class="fas fa-coffee me-2"></i> Buy Me a Coffee
+                </a>
+            </div>
+        {% endif %}
+        
+        <!-- Comments Section -->
+        {% include 'blog/comments.html' with comments=comments %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#like').on('click', function(e) {
+        e.preventDefault();
+        var $likeButton = $(this);
+        var postId = $likeButton.val();
+        
+        $.ajax({
+            url: "{% url 'post-like' %}",
+            type: 'POST',
+            data: {
+                'id': postId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            dataType: 'json',
+            success: function(data) {
+                var $likeCount = $('#total-likes');
+                var currentCount = parseInt($likeCount.text());
+                
+                if ($likeButton.find('i').hasClass('far')) {
+                    $likeButton.find('i').removeClass('far').addClass('fas');
+                    $likeCount.text(currentCount + 1);
+                } else {
+                    $likeButton.find('i').removeClass('fas').addClass('far');
+                    $likeCount.text(currentCount - 1);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error liking post');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

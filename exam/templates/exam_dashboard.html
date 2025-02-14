@@ -1,0 +1,10 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'exam/styles.css' %}">
+
+<h1>Your Exams</h1>
+<a href="{% url 'create_exam' %}">Create New Exam</a>
+<ul>
+  {% for exam in exams %}
+    <li>{{ exam.title }} - {{ exam.get_total_attendees }} attendees</li>
+  {% endfor %}
+</ul>

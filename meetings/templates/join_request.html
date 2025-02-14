@@ -1,0 +1,56 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-2xl font-bold mb-4">Join Meeting: {{ meeting.title }}</h2>
+        
+        {% if pending_request %}
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+                <p>Your join request is pending approval from the host.</p>
+            </div>
+        {% else %}
+            <form id="joinRequestForm" method="POST" action="{% url 'request_join_meeting' channel=channel %}">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    Request to Join
+                </button>
+            </form>
+        {% endif %}
+
+        <div class="mt-4">
+            <a href="{% url 'meeting_list' %}" class="text-blue-500 hover:text-blue-600">
+                Back to Meetings
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('joinRequestForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        });
+        
+        const data = await response.json();
+        
+        if (data.status === 'approved') {
+            window.location.href = data.redirect_url;
+        } else if (data.status === 'pending') {
+            window.location.reload();
+        } else {
+            alert(data.message || 'An error occurred');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('An error occurred while sending the join request');
+    }
+});
+</script>
+{% endblock %}

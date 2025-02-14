@@ -1,0 +1,88 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'exam/styles.css' %}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(to bottom right, #f8f9fa, #e9ecef);
+    padding: 2rem;
+    color: #333;
+  }
+
+  .result-container {
+    max-width: 600px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin: 2rem auto;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .result-container h1 {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 1rem;
+  }
+
+  .result-container p {
+    font-size: 1.8rem;
+    font-weight: bold;
+  }
+
+  .result-container .score {
+    color: #28a745;
+    font-size: 3rem;
+  }
+
+  .result-container .back-btn {
+    display: inline-block;
+    margin-top: 1.5rem;
+    padding: 0.7rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1rem;
+  }
+
+  .result-container .back-btn:hover {
+    background-color: #0056b3;
+  }
+
+  /* Icons for better feedback */
+  .result-container i {
+    font-size: 4rem;
+    color: #ffc107;
+    margin-top: 1rem;
+  }
+
+  .score-feedback {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+  }
+</style>
+
+<div class="result-container">
+  <h1>Exam Result</h1>
+  
+  <!-- Animated Score Icon -->
+  <i class="fas fa-trophy"></i>
+
+  <p>Your Score:</p>
+  <p class="score">{{ result.score }}</p>
+
+  <!-- Conditional Feedback Based on Score -->
+  {% if result.score >= 90 %}
+    <p class="score-feedback">Excellent work! Keep it up! 🏅</p>
+  {% elif result.score >= 70 %}
+    <p class="score-feedback">Good job! You can aim even higher! ⭐</p>
+  {% elif result.score >= 50 %}
+    <p class="score-feedback">Not bad, but there's room for improvement! 💪</p>
+  {% else %}
+    <p class="score-feedback">Don't give up! Practice makes perfect! 🚀</p>
+  {% endif %}
+  
+  <a href="{% url 'exam:exam_list' %}" class="back-btn">Back to Exams</a>
+</div>

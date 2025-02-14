@@ -1,0 +1,41 @@
+<form id="like-form" action="{% url 'post-like' %}" method="POST">
+    {% csrf_token %}
+    {% if user.is_authenticated %}
+        <button 
+            id="like" 
+            type="submit" 
+            name="post_id" 
+            value="{{post.id}}" 
+            class="btn btnhrt"
+        >
+            <i class="{% if liked %}fas{% else %}far{% endif %} fa-heart"></i>
+        </button>
+    {% else %}
+        <small>Login to like</small>
+    {% endif %}
+    - {{total_likes}} Like{{ total_likes|pluralize }}
+</form>
+
+{% if user.is_authenticated %}
+<script>
+$(document).ready(function() {
+    $('#like-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            url: "{% url 'post-like' %}",
+            type: 'POST',
+            data: $(this).serialize(),
+            dataType: 'json',
+            success: function(data) {
+                if (data.form) {
+                    $('.post-like-section').html(data.form);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error liking post');
+            }
+        });
+    });
+});
+</script>
+{% endif %}

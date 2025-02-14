@@ -1,0 +1,19 @@
+<!-- support/templates/support/ticket_list.html -->
+{% extends 'blog/base.html' %}
+
+{% block content %}
+  <h2>Support Tickets</h2>
+  <a href="{% url 'support:create_ticket' %}">Create New Ticket</a>
+  
+  {% for ticket in tickets %}
+    <div class="ticket">
+      <h3>{{ ticket.subject }}</h3>
+      <p>Category: {{ ticket.category }}</p>
+      <p>Status: {{ ticket.status }}</p>
+      <p>Created: {{ ticket.created_at }}</p>
+      <p>{{ ticket.message }}</p>
+    </div>
+  {% empty %}
+    <p>No tickets found.</p>
+  {% endfor %}
+{% endblock %}

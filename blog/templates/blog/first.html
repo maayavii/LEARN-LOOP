@@ -1,0 +1,364 @@
+{% extends "blog/base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+{% load static %}
+<style>
+  .hero-sectiion {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    color: #ffffff;
+    ;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #000000;
+    position: relative; /* Add this for the button positioning */
+  }
+
+  .hero-title{
+    font-size: 3.5rem;
+    color: rgb(255, 255, 255);
+    text-shadow:0px 2px 4px rgb(0 0 0)
+  }
+
+  .video-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 0;
+  }
+  
+  .rounded-circle {
+    background-color: #000000 !important;
+}
+
+
+
+  .video-background video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translateX(-50%) translateY(-50%);
+    object-fit: cover;
+  }
+
+  .video-overlay {
+    position: absolute;
+    top: 5;
+    left: 0;
+    width: 100%;
+    height: 100%;
+   
+  }
+
+  .hero-content {
+    z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: rgb(255, 255, 255);
+  }
+
+  .card-body{
+    background: (97deg, #000000 0%, #000000 100%)
+
+  }
+
+  .rounded-circle{
+    background-color:#01040e !important
+  }
+
+
+
+  .hero-buttons {
+    margin-top: 30px;
+  }
+
+  .btn-primary {
+    color: #fff;
+    background-color: #000000;
+    border-color: #007bff;
+}
+
+  .hero-buttons .btn {
+    margin: 10px;
+  }
+
+  .contributor-card {
+    transition: transform 0.3s ease-in-out;
+    background: rgba(4, 5, 36, 0.9);
+    backdrop-filter: blur(10px);
+  }
+
+  .contributor-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .contribution-stat {
+    background: linear-gradient(135deg, #010110 0%, #130434 100%);
+    color: white;
+    border-radius: 1rem;
+    padding: 0.5rem;
+    margin: 0.5rem;
+  }
+  .pt-5, .py-5 {
+    padding-top: 12rem !important;
+}
+
+  .profile-image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .profile-image {
+    border: 4px solid #fff;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  .badge-champion {
+    background: linear-gradient(135deg, #001fab 0%, #110332 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 0.875rem;
+    margin-top: 1rem;
+  }
+
+
+  .hover-elevate {
+      transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    }
+    
+    .hover-elevate:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .features-section {
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .features-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(99, 102, 241, 0.1), transparent);}
+
+      .bg-light {
+    background-color: #ffffff00 !important;}
+    .card{
+      background-color:#010110
+    }
+    h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+}
+
+
+  .profile-image-wrapper{
+    border-bottom-color: rgb(2, 15, 30)
+  }
+
+  .b2b{
+    background: #2383d6;
+  }  
+  .text-primary {
+    color: #000000 !important;
+}
+.text-muted {
+    color: #000000 !important;
+}
+
+.display-4 {
+    font-size: 3.5rem;
+    font-weight: 300;
+    line-height: 3.2;
+}
+</style>
+
+<!-- Hero Section with Video Background -->
+<section class="hero-section mt-5">
+  <div class="video-background">
+    <video autoplay muted loop playsinline>
+      <source src="{% static 'blog/videos/bgr.mp4' %}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <div class="video-overlay"></div>
+  
+  <div class="container hero-content">
+    <div class="row align-items-center">
+      <div class="col-lg-6" data-aos="fade-up">
+        <h1 class="hero-title font-weight-bold mb-4" >Let's Wow your online presence</h1>
+        <p class="lead mb-5">
+          Surround yourself with people who are going to lift you higher. Join today and share your thoughts.
+        </p>
+        <div class="hero-buttons">
+          {% if user.is_authenticated %}
+            <a class="btn btn-lg btn-light font-weight-bold mr-3 rounded-pill px-4 py-2" href="{% url 'blog-home' %}">Get Started</a>
+            <a class="btn btn-lg btn-outline-light font-weight-bold" href="#"><i class="far fa-check-circle"></i>&nbsp;LOGGED IN</a>
+          {% else %}
+            <a class="btn btn-lg btn-light font-weight-bold mr-3 rounded-pill px-4 py-2" href="{% url 'register' %}">REGISTER</a>
+            <a class="btn btn-lg btn-outline-light font-weight-bold" href="{% url 'login' %}">LOGIN</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--explore section    -->
+<section class="features-section py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="display-4 fw-bold">
+        <span class="text-primariy" style="color: #007bff;">Our </span> <a style="color: #010110;">Features</a>
+      </h2>
+      <p class="text-muted h5">Everything you need to enhance your productivity 🚀</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-3">
+        <a href="{% url 'create_meeting' %}" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm hover-elevate">
+            <div class="card-body text-center p-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3" style="font-size: 2rem;">
+                📅
+              </div>
+              <h4 class="card-title">Create Meeting</h4>
+              <p class="text-muted">Schedule and host virtual meetings with your team members easily</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="col-md-3">
+        <a href="{% url 'file_converter:upload_document' %}" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm hover-elevate">
+            <div class="card-body text-center p-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3" style="font-size: 2rem;">
+                📝
+              </div>
+              <h4 class="card-title">Edit Document</h4>
+              <p class="text-muted">Collaborate on documents in real-time with powerful editing tools</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="col-md-3">
+        <a href="{% url 'file_converter:convert_file' %}" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm hover-elevate">
+            <div class="card-body text-center p-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3" style="font-size: 2rem;">
+                🔄
+              </div>
+              <h4 class="card-title">Convert File</h4>
+              <p class="text-muted">Convert your files between different formats seamlessly</p>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="col-md-3">
+        <a href="https://app.diagrams.net/" target="_blank" class="text-decoration-none">
+          <div class="card h-100 border-0 shadow-sm hover-elevate">
+            <div class="card-body text-center p-4">
+              <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-block mb-3" style="font-size: 2rem;">
+                📊
+              </div>
+              <h4 class="card-title">Make Your DFD</h4>
+              <p class="text-muted">Create and edit Data Flow Diagrams with an intuitive interface</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+</section>
+
+
+
+<!-- Contributors Section -->
+<section class="b2b container my-5 py-5">
+  <div class=" text-center mb-5">
+    <h2 class="display-4 fw-bold">
+      <span class="text-primary">Top</span> Contributors
+    </h2>
+    <p class="text-muted h5">Celebrating our community's most active members</p>
+  </div>
+
+  {% if top_contributors %}
+    <div class="row justify-content-center g-4">
+      {% for contributor in top_contributors %}
+        <div class="col-lg-4 col-md-6 d-flex justify-content-center">
+          <div class="contributor-card h-100 shadow-lg border-0 rounded-3 overflow-hidden text-center p-4 position-relative">
+            
+            <!-- Profile Image -->
+            <div class="profile-image-wrapper mb-3">
+              <img src="{% if contributor.user.profile.image %}{{ contributor.user.profile.image.url }}{% else %}{% static 'profile_pics/default.jpg' %}{% endif %}"
+                   class="profile-image rounded-circle border border-3 border-primary"
+                   width="120" height="120"
+                   alt="{{ contributor.user.username }}">
+            </div>
+
+            <!-- Contributor Name -->
+            <h4 class="card-title mb-2">{{ contributor.user.username }}</h4>
+
+            <!-- Badge -->
+            <div class="badge-champion fw-bold text-primary">
+              <i class="fas fa-crown me-2 text-warning"></i> Community Champion
+            </div>
+
+            <!-- Contribution Stats -->
+            <div class="d-flex justify-content-around text-center mt-4">
+              <div class="contribution-stat">
+                <div class="h4 mb-0">{{ contributor.contribution_score|floatformat:1 }}</div>
+                <small>Score</small>
+              </div>
+              <div class="contribution-stat">
+                <div class="h4 mb-0">{{ contributor.total_posts }}</div>
+                <small>Posts</small>
+              </div>
+              <div class="contribution-stat">
+                <div class="h4 mb-0">{{ contributor.total_comments }}</div>
+                <small>Comments</small>
+              </div>
+            </div>
+
+            <!-- Profile Link -->
+            <div class="mt-4">
+              <a href="{% url 'profile-detail-view' contributor.user.id %}" 
+                 class="btn btn-primary btn-lg rounded-pill px-4">
+                <i class="fas fa-user me-2"></i> View Profile
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info text-center p-5" role="alert">
+      <i class="fas fa-users fa-3x mb-3"></i>
+      <h4>No contributors found</h4>
+      <p class="mb-0">Be the first to contribute and make your mark!</p>
+    </div>
+  {% endif %}
+</section>
+
+
+
+{% endblock %}
