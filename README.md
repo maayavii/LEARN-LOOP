@@ -1,26 +1,23 @@
-# Django Social Network
+# LEARN LOOP
 
-A social media web-application with Django.
+a web application that help peer to peer knowledge shering among students in a department
 
 ## Features :
 
-<li>Sign Up, Login, OAuth 2.0(Google, Github), Logout, Forgot Password</li>
+<li>Sign Up, Login, google auth, Logout, Forgot Password</li>
 <li>Public Profile view</li>
 <li>Create, Edit, Delete Posts with customized text, pictures and links</li>
-<li>Like, Comment / Reply, Save and Search posts</li>
+<li>Like, Comment / Reply, and Search posts</li>
 <li>Follow and Unfollow users to view their posts</li>
-<li>Friend Request</li>
+<li>Admin support</li>
 <li>Notifications</li>
-<li>Chats using websockets</li>
-<li>Video Calls</li>
+<li>Video Calls using Agora to conduct group meetings  enabled with screen shereing</li>
+<li>Document convertor</li>
+<li>document editor</li>
+<li>buy me a coffie to support creators</li>
+<li>list out the top contributors every month</li>
+<li>mock exam creation and attending </li>
 
-## Demo (Not up-to-date)
-
-
-https://user-images.githubusercontent.com/64803043/118666705-02735600-b811-11eb-80f9-445bbe6e55c9.mp4
-
-
-<a href="./demo/demo1.mp4">Video Link</a>
 
 ## Adding env variables
 
@@ -62,8 +59,3 @@ To run tests, run the following command
   python manage.py test
 ```
 
-## Deploy to Heroku
-
-https://devcenter.heroku.com/articles/getting-started-with-python
-
-https://realpython.com/django-hosting-on-heroku/
