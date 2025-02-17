@@ -115,15 +115,20 @@ if 'DATABASE_URL' in os.environ:
         )
     }
 # Database settings
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'loop_7zzr',
-        'USER': 'loop_7zzr_user',
-        'PASSWORD': '7hiBXNW9MiCocrMejsnHNMdLN0jLL62N',
-        'HOST': 'dpg-cupj8c1u0jms73bo0320-a',
-        'PORT': '5432'
-    }
+#DATABASES = {
+ #   'default': {
+ #       'ENGINE': 'django.db.backends.postgresql',
+ #       'NAME': 'loop_7zzr',
+ #       'USER': 'loop_7zzr_user',
+  #      'PASSWORD': '7hiBXNW9MiCocrMejsnHNMdLN0jLL62N',
+  #      'HOST': 'dpg-cupj8c1u0jms73bo0320-a',
+   #     'PORT': '5432'
+ #   }
+#}
+
+
+DATABASES={
+    "default":dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
