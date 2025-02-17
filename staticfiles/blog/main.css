@@ -1,14 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300&display=swap');
 
 body {
-    background: #f7f7f7;
     color: #333333;
     margin-top: 5rem;
     scroll-behavior: smooth;
+  
+      background:  #f2f2f2 ;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    color: #444444;
+    color: #020000;
   }
   
   ul {
