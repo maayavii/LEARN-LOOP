@@ -118,10 +118,10 @@ if 'DATABASE_URL' in os.environ:
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'user',
-        'HOST': 'localhost',
+        'NAME': 'loop_7zzr',
+        'USER': 'loop_7zzr_user',
+        'PASSWORD': '7hiBXNW9MiCocrMejsnHNMdLN0jLL62N',
+        'HOST': 'dpg-cupj8c1u0jms73bo0320-a',
         'PORT': '5432'
     }
 }
