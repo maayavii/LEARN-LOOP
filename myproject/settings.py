@@ -105,6 +105,15 @@ SITE_ID = 1
 WSGI_APPLICATION = 'myproject.wsgi.application'
 ASGI_APPLICATION = "myproject.routing.application"
 
+import dj_database_url
+# Database configuration
+if 'DATABASE_URL' in os.environ:
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 # Database settings
 DATABASES = {
     'default': {
