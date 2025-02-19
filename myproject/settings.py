@@ -128,9 +128,21 @@ if 'DATABASE_URL' in os.environ:
 #}
 
 
-DATABASES={
-    "default":dj_database_url.parse(os.environ.get("DATABASE_URL"))
-}
+import os
+import dj_database_url
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgresql://"):
+        DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgres://", 1)
+    
+    DATABASES = {
+        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, conn_health_checks=True)
+    }
+else:
+    raise ValueError("❌ DATABASE_URL is not set in environment variables. Please check your Render settings.")
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
